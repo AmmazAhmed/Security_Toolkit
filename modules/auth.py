@@ -1,6 +1,3 @@
-# ──────────────────────────────────────────────────────────
-#  AUTHENTICATION MODULE - With MIXED CASE CAPTCHA
-# ──────────────────────────────────────────────────────────
 import tkinter as tk
 from tkinter import messagebox
 import hashlib
@@ -81,7 +78,7 @@ class LoginGate:
         tk.Label(left, text="SECURITY\nTOOLKIT",
                  font=("Consolas", 22, "bold"),
                  bg=C["sidebar"], fg=C["text"]).pack()
-        tk.Label(left, text="v3.0  —  Educational",
+        tk.Label(left, text="Educational",
                  font=("Consolas", 9),
                  bg=C["sidebar"], fg=C["muted"]).pack(pady=6)
 
@@ -137,11 +134,11 @@ class LoginGate:
         self.p_entry = styled_entry(inner, width=38, show="●")
         self.p_entry.pack(padx=30, pady=(2, 10))
 
-        # CAPTCHA SECTION - VISIBLE with mixed case
+        # CAPTCHA SECTION - SIMPLIFIED with mixed case
         captcha_container = tk.Frame(inner, bg=C["card2"], bd=2, relief="solid", highlightbackground=C["border"])
         captcha_container.pack(fill="x", padx=30, pady=(5, 10))
         
-        # CAPTCHA label with warning
+        # CAPTCHA label
         captcha_header = tk.Frame(captcha_container, bg=C["card2"])
         captcha_header.pack(fill="x", padx=10, pady=(8, 0))
         
@@ -149,11 +146,7 @@ class LoginGate:
                  font=("Consolas", 9, "bold"),
                  bg=C["card2"], fg=C["warning"]).pack(side="left")
         
-        tk.Label(captcha_header, text="(Case Sensitive)", 
-                 font=("Consolas", 7),
-                 bg=C["card2"], fg=C["danger"]).pack(side="left", padx=(8, 0))
-        
-        # CAPTCHA display frame with background effect
+        # CAPTCHA display frame
         captcha_display_frame = tk.Frame(captcha_container, bg=C["entry"], bd=1, relief="sunken")
         captcha_display_frame.pack(fill="x", padx=10, pady=(8, 5))
         
@@ -174,20 +167,12 @@ class LoginGate:
         styled_btn(captcha_button_frame, "🔄 New Code", self._refresh_captcha,
                    color=C["accent"], width=14).pack(side="left", padx=5)
         
-        # Hint about case sensitivity
-        tk.Label(captcha_button_frame, text="⚠️ Exact match required", 
-                 font=("Consolas", 7), bg=C["card2"], fg=C["danger"]).pack(side="left", padx=(10, 0))
-        
-        # CAPTCHA entry field with hint
-        tk.Label(captcha_container, text="Enter the code exactly as shown above:", 
+        # CAPTCHA entry field
+        tk.Label(captcha_container, text="Enter the code exactly as shown:", 
                  font=("Consolas", 8), bg=C["card2"], fg=C["muted"]).pack(anchor="w", padx=10)
         
         self.captcha_entry = styled_entry(captcha_container, width=34, show="")
         self.captcha_entry.pack(fill="x", padx=10, pady=(5, 10))
-        
-        # Add example hint
-        tk.Label(captcha_container, text="Example: If code shows 'A b 3 X y Z' type exactly that", 
-                 font=("Consolas", 7), bg=C["card2"], fg=C["muted"]).pack(anchor="w", padx=10, pady=(0, 8))
         
         # buttons
         bf = tk.Frame(inner, bg=C["card"])
@@ -228,7 +213,7 @@ class LoginGate:
         entered = self.captcha_entry.get().strip()
         # Exact match comparison (case sensitive)
         if entered != self.current_captcha:
-            self._err(f"CAPTCHA verification failed! Expected '{self.current_captcha}', got '{entered}'")
+            self._err(f"CAPTCHA verification failed! Expected '{self.current_captcha}'")
             self._refresh_captcha()
             return False
         return True
