@@ -1,0 +1,16 @@
+security_toolkit/
+├── main.py              
+├── requirements.txt     
+├── README.md          
+├── modules/
+│   ├── __init__.py
+│   ├── auth.py
+│   ├── app.py
+│   ├── config.py
+│   ├── messaging.py    
+│   ├── password_manager.py
+│   ├── file_encryption.py
+│   ├── phishing.py     
+│   ├── cipher.py    
+│   └── admin.py      
+└── toolkit_data/       # Created automaticall
