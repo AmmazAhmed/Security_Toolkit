@@ -63,3 +63,47 @@ class CipherToolkit:
             self._beaufort_ui(self.work)
         else:
             self._rk_ui(self.work)
+
+    # Caesar
+    def _caesar_ui(self, f):
+        tk.Label(f, text="Shifts each letter by a fixed number (0-25).", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(pady=6)
+        r1 = tk.Frame(f, bg=C["card"])
+        r1.pack(pady=4)
+        tk.Label(r1, text="Shift Key:", font=("Consolas", 10), bg=C["card"], fg=C["text"]).pack(side="left", padx=6)
+        self.ck = styled_entry(r1, width=5)
+        self.ck.insert(0, "3")
+        self.ck.pack(side="left")
+        self.cm = tk.StringVar(value="encrypt")
+        r2 = tk.Frame(f, bg=C["card"])
+        r2.pack(pady=4)
+        for val, lbl in [("encrypt", "Encrypt →"), ("decrypt", "← Decrypt")]:
+            tk.Radiobutton(r2, text=lbl, variable=self.cm, value=val, bg=C["card"], fg=C["text"],
+                           selectcolor=C["card2"], activebackground=C["card"], font=("Consolas", 10)).pack(side="left", padx=12)
+        tk.Label(f, text="Input Text:", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(anchor="w")
+        self.cin = tk.Text(f, width=56, height=4, bg=C["entry"], fg=C["entry_fg"], insertbackground=C["accent"],
+                           font=("Consolas", 11), relief="flat", highlightthickness=1, highlightbackground=C["border"])
+        self.cin.pack(pady=4)
+        styled_btn(f, "▶ Run Caesar", self._run_c, color=C["accent"], width=18).pack(pady=6)
+        self.cout = scrolled_out(f, height=5, fg=C["accent"])
+        self.cout.pack()
+
+    def _run_c(self):
+        try:
+            sh = int(self.ck.get().strip())
+            if not (0 <= sh <= 25):
+                raise ValueError
+        except ValueError:
+            messagebox.showwarning("Key Error", "Shift must be 0-25")
+            return
+        t = self.cin.get("1.0", tk.END).strip()
+        if not t:
+            return
+        d = sh if self.cm.get() == "encrypt" else -sh
+        res = "".join(chr((ord(c) - (ord('A') if c.isupper() else ord('a')) + d) % 26 + (ord('A') if c.isupper() else ord('a'))) if c.isalpha() else c for c in t)
+        self.cout.config(state="normal")
+        self.cout.delete("1.0", tk.END)
+        self.cout.insert(tk.END, f"[{self.cm.get().upper()} | shift={sh}]\n{res}")
+        self.cout.config(state="disabled")
+
+
+
