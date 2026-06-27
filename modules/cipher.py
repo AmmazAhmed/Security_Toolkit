@@ -299,5 +299,130 @@ class CipherToolkit:
             self.bout.insert(tk.END, f"❌ Error during brute-force: {str(e)}\n")
             self.bout.config(state="disabled")
             messagebox.showerror("Error", f"Brute-force failed: {str(e)}")
+    # AES KEY (Random key generate)
+    def _rk_ui(self, f):
+        tk.Label(f, text=f"Keys saved to: {KEYS_TXT}  (same key always decrypts the same text)",
+                 font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(pady=6)
+        nb = ttk.Notebook(f)
+        nb.pack(fill="both", expand=True)
+        et = tk.Frame(nb, bg=C["card"])
+        nb.add(et, text="  🔒 Encrypt  ")
+        self._rk_enc(et)
+        dt = tk.Frame(nb, bg=C["card"])
+        nb.add(dt, text="  🔓 Decrypt  ")
+        self._rk_dec(dt)
 
+    def _vig_enc(self, t, k):
+        k = k.upper()
+        out = []
+        ki = 0
+        for c in t.upper():
+            if c.isalpha():
+                out.append(chr((ord(c) - ord('A') + ord(k[ki % len(k)]) - ord('A')) % 26 + ord('A')))
+                ki += 1
+            else:
+                out.append(c)
+        return "".join(out)
 
+    def _vig_dec(self, t, k):
+        k = k.upper()
+        out = []
+        ki = 0
+        for c in t.upper():
+            if c.isalpha():
+                out.append(chr((ord(c) - ord('A') - (ord(k[ki % len(k)]) - ord('A')) + 26) % 26 + ord('A')))
+                ki += 1
+            else:
+                out.append(c)
+        return "".join(out)
+
+    def _rk_enc(self, f):
+        tk.Label(f, text="Message Label (used to retrieve the key later):", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(anchor="w", pady=(8, 2))
+        self.rk_lbl = styled_entry(f, width=30)
+        self.rk_lbl.insert(0, "my_message")
+        self.rk_lbl.pack(anchor="w", pady=2)
+        tk.Label(f, text="Plain Text:", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(anchor="w", pady=(6, 2))
+        self.rk_in = tk.Text(f, width=56, height=4, bg=C["entry"], fg=C["entry_fg"], insertbackground=C["accent"],
+                             font=("Consolas", 11), relief="flat", highlightthickness=1, highlightbackground=C["border"])
+        self.rk_in.pack(pady=4)
+        styled_btn(f, "🔒 Encrypt & Save Key", self._do_rk_enc, color=C["accent"], width=22).pack(pady=6)
+        row = tk.Frame(f, bg=C["card"])
+        row.pack(fill="x")
+        tk.Label(row, text="Generated Key:", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(side="left", padx=(0, 8))
+        self.rk_kout = styled_entry(row, width=44)
+        self.rk_kout.pack(side="left")
+        tk.Label(f, text="Cipher Text:", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(anchor="w", pady=(6, 2))
+        self.rk_cout = scrolled_out(f, height=4, fg=C["accent"])
+        self.rk_cout.pack()
+
+    def _do_rk_enc(self):
+        plain = self.rk_in.get("1.0", tk.END).strip()
+        if not plain:
+            return
+        lbl = self.rk_lbl.get().strip() or "msg"
+        n = max(sum(1 for c in plain if c.isalpha()), 1)
+        key = "".join(random.choice(string.ascii_uppercase) for _ in range(n))
+        enc = self._vig_enc(plain, key)
+        self.keys[lbl] = key
+        _save_ck(self.keys)
+        self.rk_kout.delete(0, tk.END)
+        self.rk_kout.insert(0, key)
+        self.rk_cout.config(state="normal")
+        self.rk_cout.delete("1.0", tk.END)
+        self.rk_cout.insert(tk.END, enc)
+        self.rk_cout.config(state="disabled")
+        messagebox.showinfo("Encrypted", f"Label : {lbl}\nKey saved to: {KEYS_TXT}\n\nThe same key will always decrypt this text.\nUse the Decrypt tab and select this label.")
+
+    def _rk_dec(self, f):
+        tk.Label(f, text="Select a saved key label to auto-fill the key:", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(anchor="w", pady=(8, 2))
+        row = tk.Frame(f, bg=C["card"])
+        row.pack(fill="x", pady=4)
+        self.rk_sv = tk.StringVar()
+        self.rk_sm = ttk.Combobox(row, textvariable=self.rk_sv, state="readonly", width=22, font=("Consolas", 10))
+        self.rk_sm.pack(side="left", padx=(0, 8))
+        styled_btn(row, "Load Key", self._load_key, color=C["card2"], width=12).pack(side="left")
+        styled_btn(row, "🔄 Refresh", self._refresh_labels, color=C["card2"], width=10).pack(side="left", padx=4)
+        self._refresh_labels()
+        tk.Label(f, text="Key (A-Z):", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(anchor="w", pady=(6, 2))
+        self.rk_dk = styled_entry(f, width=54)
+        self.rk_dk.pack(pady=2)
+        tk.Label(f, text="Cipher Text:", font=("Consolas", 9), bg=C["card"], fg=C["muted"]).pack(anchor="w", pady=(6, 2))
+        self.rk_ci = tk.Text(f, width=56, height=4, bg=C["entry"], fg=C["entry_fg"], insertbackground=C["accent"],
+                             font=("Consolas", 11), relief="flat", highlightthickness=1, highlightbackground=C["border"])
+        self.rk_ci.pack(pady=4)
+        styled_btn(f, "🔓 Decrypt", self._do_rk_dec, color=C["accent2"], fg="black", width=18).pack(pady=6)
+        self.rk_po = scrolled_out(f, height=4, fg=C["success"])
+        self.rk_po.pack()
+
+    def _refresh_labels(self):
+        self.keys = _load_ck()
+        lbls = list(self.keys.keys())
+        self.rk_sm["values"] = lbls
+        if lbls:
+            self.rk_sv.set(lbls[-1])
+
+    def _load_key(self):
+        lbl = self.rk_sv.get()
+        if lbl in self.keys:
+            self.rk_dk.delete(0, tk.END)
+            self.rk_dk.insert(0, self.keys[lbl])
+        else:
+            messagebox.showinfo("Not Found", "No key for that label.")
+
+    def _do_rk_dec(self):
+        key = self.rk_dk.get().strip().upper()
+        cipher = self.rk_ci.get("1.0", tk.END).strip()
+        if not key:
+            messagebox.showwarning("No Key", "Load or enter a key.")
+            return
+        if not cipher:
+            messagebox.showwarning("No Text", "Enter cipher text.")
+            return
+        if not all(c in string.ascii_uppercase for c in key):
+            messagebox.showwarning("Bad Key", "Key must be letters A-Z only.")
+            return
+        plain = self._vig_dec(cipher, key)
+        self.rk_po.config(state="normal")
+        self.rk_po.delete("1.0", tk.END)
+        self.rk_po.insert(tk.END, plain)
+        self.rk_po.config(state="disabled")
