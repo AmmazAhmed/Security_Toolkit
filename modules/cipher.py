@@ -1,4 +1,4 @@
-import tkinter as tk
+mport tkinter as tk
 from tkinter import ttk, messagebox
 import random
 import string
@@ -104,8 +104,8 @@ class CipherToolkit:
         self.cout.delete("1.0", tk.END)
         self.cout.insert(tk.END, f"[{self.cm.get().upper()} | shift={sh}]\n{res}")
         self.cout.config(state="disabled")
-    
-    # Beaufort - 
+
+    # Beaufort - FIXED: Actually tries all key combinations
     def _beaufort_ui(self, f):
         tk.Label(f, text="Brute-force decrypts by trying ALL possible keys (A-Z for each position up to length 6).\nWARNING: Long texts with key length 6 may take a few seconds.",
                  font=("Consolas", 9), bg=C["card"], fg=C["warning"]).pack(pady=6)
@@ -299,6 +299,7 @@ class CipherToolkit:
             self.bout.insert(tk.END, f"❌ Error during brute-force: {str(e)}\n")
             self.bout.config(state="disabled")
             messagebox.showerror("Error", f"Brute-force failed: {str(e)}")
+
     # AES KEY (Random key generate)
     def _rk_ui(self, f):
         tk.Label(f, text=f"Keys saved to: {KEYS_TXT}  (same key always decrypts the same text)",
